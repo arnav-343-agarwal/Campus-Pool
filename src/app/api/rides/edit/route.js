@@ -6,7 +6,7 @@ import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding';
 
 const geocoder = mbxGeocoding({ accessToken: process.env.MAPBOX_TOKEN });
 
-async function handler(req) {
+async function handler(req, user) {
   if (req.method !== 'PATCH') {
     return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
   }
@@ -14,7 +14,7 @@ async function handler(req) {
   await connectDB();
 
   const { rideId, updates } = await req.json();
-  const userId = req.user.id;
+  const userId = user.id;
 
   const ride = await Ride.findById(rideId);
 
