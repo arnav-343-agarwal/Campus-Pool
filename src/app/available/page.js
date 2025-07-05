@@ -36,7 +36,7 @@ export default function AvailableRidesPage() {
             <h2 className="text-lg font-semibold">
               {ride.source.name} → {ride.destination.name}
             </h2>
-            <p className="text-sm text-gray-600">{ride.tag} | ₹{ride.cost} | Status: {ride.status}</p>
+            <p className="text-sm text-gray-600">{ride.tags[0]} | ₹{ride.cost} | Status: {ride.status}</p>
             <p className="mt-1 text-gray-700">{ride.description}</p>
             <Link href={`/rides/${ride._id}`} className="text-blue-600 text-sm mt-2 inline-block">View Details →</Link>
           </div>

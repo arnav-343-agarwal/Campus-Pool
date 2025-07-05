@@ -19,6 +19,7 @@ export default function RideDetailPage() {
       try {
         const res = await fetch(`/api/rides/${id}`);
         const data = await res.json();
+        console.log(data);
         if (!res.ok) throw new Error(data.message || "Failed to load ride");
         setRide(data.ride);
       } catch (err) {
@@ -97,9 +98,12 @@ export default function RideDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ rideId: id, userId: userIdToRemove }),
+        body: JSON.stringify({ rideId: id, userIdToRemove }),
       });
-      router.refresh();
+      setRide((prev) => ({
+        ...prev,
+        members: prev.members.filter((m) => m._id !== userIdToRemove),
+      }));
     } catch (err) {
       alert("Failed to remove member");
     }
@@ -141,14 +145,37 @@ export default function RideDetailPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="flex gap-2 flex-wrap">
-            {ride.tags?.map((tag, i) => (
-              <Badge key={i} variant="outline">{tag}</Badge>
-            ))}
-            <Badge variant="outline">₹{ride.cost}</Badge>
-            <Badge variant="outline">{ride.status}</Badge>
+          {/* Basic Info Section */}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="font-semibold">Price:</span>
+              <span>₹{ride.cost}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold">Status:</span>
+              <span>{ride.status}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold">Seats:</span>
+              <span>
+                {ride.members?.length || 0} / {ride.maxMembers} filled
+              </span>
+            </div>
+            {ride.tags?.length > 0 && (
+              <div className="flex justify-between">
+                <span className="font-semibold">Tags:</span>
+                <span className="flex gap-2 flex-wrap">
+                  {ride.tags.map((tag, i) => (
+                    <Badge key={i} variant="outline">
+                      {tag}
+                    </Badge>
+                  ))}
+                </span>
+              </div>
+            )}
           </div>
 
+          {/* Description & Note */}
           <p className="text-gray-700">{ride.description}</p>
 
           {ride.noteForJoiners && (
@@ -158,24 +185,33 @@ export default function RideDetailPage() {
           )}
 
           <p className="text-sm text-gray-500">
-            Posted by: <strong>{ride.creator.name}</strong> ({ride.creator.email})
+            Posted by: <strong>{ride.creator.name}</strong> (
+            {ride.creator.email})
           </p>
 
+          {/* Action Buttons */}
           {isCreator && (
             <div className="flex gap-2">
-              <Button onClick={() => router.push(`/edit-ride/${ride._id}`)}>Edit</Button>
-              <Button variant="destructive" onClick={handleDeleteRide}>Delete</Button>
+              <Button onClick={() => router.push(`/edit-ride/${ride._id}`)}>
+                Edit
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteRide}>
+                Delete
+              </Button>
             </div>
           )}
 
           {!isCreator && alreadyJoined && (
-            <Button variant="destructive" onClick={handleLeave}>Leave Ride</Button>
+            <Button variant="destructive" onClick={handleLeave}>
+              Leave Ride
+            </Button>
           )}
 
           {!isCreator && !alreadyJoined && (
             <Button onClick={handleJoin}>Join Ride</Button>
           )}
 
+          {/* Member List */}
           {ride.members?.length > 0 && (
             <div className="mt-6 space-y-2">
               <h3 className="font-semibold text-lg">Members Joined</h3>
@@ -185,7 +221,9 @@ export default function RideDetailPage() {
                     key={user._id}
                     className="flex justify-between items-center border-b pb-1"
                   >
-                    <span>{user.name} ({user.email})</span>
+                    <span>
+                      {user.name} ({user.email})
+                    </span>
                     {isCreator && user._id !== userId && (
                       <Button
                         size="sm"
