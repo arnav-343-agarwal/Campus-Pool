@@ -19,7 +19,6 @@ export default function RideDetailPage() {
       try {
         const res = await fetch(`/api/rides/${id}`);
         const data = await res.json();
-        // console.log(data)
         if (!res.ok) throw new Error(data.message || "Failed to load ride");
         setRide(data.ride);
       } catch (err) {
@@ -42,6 +41,9 @@ export default function RideDetailPage() {
     fetchRide();
   }, [id]);
 
+  const isCreator = userId === ride?.creator._id;
+  const alreadyJoined = ride?.members?.some((m) => m._id === userId);
+
   const handleJoin = async () => {
     const token = localStorage.getItem("token");
     if (!token) return router.push("/login");
@@ -63,57 +65,86 @@ export default function RideDetailPage() {
       setError(err.message);
     }
   };
-  
+
   const handleLeave = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return router.push('/login');
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/login");
 
-  try {
-    const res = await fetch('/api/rides/leave', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ rideId: id }),
-    });
+    try {
+      const res = await fetch("/api/rides/leave", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ rideId: id }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to leave ride');
-    router.refresh();
-  } catch (err) {
-    setError(err.message);
-  }
-};
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave ride");
+      router.refresh();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
+  const handleRemoveMember = async (userIdToRemove) => {
+    const token = localStorage.getItem("token");
+    try {
+      await fetch("/api/rides/remove-member", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ rideId: id, userId: userIdToRemove }),
+      });
+      router.refresh();
+    } catch (err) {
+      alert("Failed to remove member");
+    }
+  };
 
-  if (loading) {
+  const handleDeleteRide = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      await fetch("/api/rides/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ rideId: id }),
+      });
+      router.push("/my-created-rides");
+    } catch (err) {
+      alert("Failed to delete ride");
+    }
+  };
+
+  if (loading)
     return <p className="text-center text-gray-600 mt-8">Loading ride...</p>;
-  }
-
-  if (error || !ride) {
+  if (error || !ride)
     return (
       <div className="text-center text-red-600 mt-8">
-        <p>🚫 {error || "Ride not found"}</p>
+        🚫 {error || "Ride not found"}
       </div>
     );
-  }
-
-  const isCreator = userId === ride.creator._id;
-  const alreadyJoined = ride.joiners?.some((j) => j._id === userId);
 
   return (
-    <div className="max-w-3xl mx-auto py-10">
+    <div className="max-w-3xl mx-auto py-10 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-bold">
+          <CardTitle className="text-2xl font-bold">
             {ride.source.name} → {ride.destination.name}
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
           <div className="flex gap-2 flex-wrap">
-            <Badge variant="outline">{ride.tags[0]}</Badge>
+            {ride.tags?.map((tag, i) => (
+              <Badge key={i} variant="outline">{tag}</Badge>
+            ))}
             <Badge variant="outline">₹{ride.cost}</Badge>
             <Badge variant="outline">{ride.status}</Badge>
           </div>
@@ -122,37 +153,53 @@ export default function RideDetailPage() {
 
           {ride.noteForJoiners && (
             <div className="bg-blue-50 p-3 rounded-md text-sm border">
-              <strong>Note from Creator:</strong> {ride.noteForJoiners}
+              <strong>Note:</strong> {ride.noteForJoiners}
             </div>
           )}
 
-          <p className="text-sm text-gray-600">
-            Posted by: <strong>{ride.creator.name}</strong> (
-            {ride.creator.email})
+          <p className="text-sm text-gray-500">
+            Posted by: <strong>{ride.creator.name}</strong> ({ride.creator.email})
           </p>
 
           {isCreator && (
-            <p className="text-blue-600 font-semibold">
-              🎯 You are the creator of this ride
-            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => router.push(`/edit-ride/${ride._id}`)}>Edit</Button>
+              <Button variant="destructive" onClick={handleDeleteRide}>Delete</Button>
+            </div>
           )}
 
           {!isCreator && alreadyJoined && (
-            <p className="text-green-600 font-medium">
-              ✅ You have already joined this ride
-            </p>
+            <Button variant="destructive" onClick={handleLeave}>Leave Ride</Button>
           )}
 
-          {!isCreator && (
-            <>
-              {alreadyJoined ? (
-                <Button variant="destructive" onClick={handleLeave}>
-                  Leave Ride
-                </Button>
-              ) : (
-                <Button onClick={handleJoin}>Join Ride</Button>
-              )}
-            </>
+          {!isCreator && !alreadyJoined && (
+            <Button onClick={handleJoin}>Join Ride</Button>
+          )}
+
+          {ride.members?.length > 0 && (
+            <div className="mt-6 space-y-2">
+              <h3 className="font-semibold text-lg">Members Joined</h3>
+              <ul className="text-sm space-y-1">
+                {ride.members.map((user) => (
+                  <li
+                    key={user._id}
+                    className="flex justify-between items-center border-b pb-1"
+                  >
+                    <span>{user.name} ({user.email})</span>
+                    {isCreator && user._id !== userId && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600"
+                        onClick={() => handleRemoveMember(user._id)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {error && <p className="text-red-600 text-sm">{error}</p>}

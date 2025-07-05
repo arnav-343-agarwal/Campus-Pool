@@ -1,10 +1,9 @@
 import { connectDB } from '@/lib/db';
 import Ride from '@/models/Ride';
-import User from '@/models/User';
 import { authMiddleware } from '@/middleware/auth';
 import { NextResponse } from 'next/server';
 
-async function handler(req) {
+async function handler(req, user) {
   if (req.method !== 'POST') {
     return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
   }
@@ -12,7 +11,7 @@ async function handler(req) {
   await connectDB();
 
   const { rideId, userIdToRemove } = await req.json();
-  const requesterId = req.user.id;
+  const requesterId = user.id; // ✅ Use second param `user`
 
   const ride = await Ride.findById(rideId);
 
@@ -21,24 +20,15 @@ async function handler(req) {
   }
 
   if (ride.creator.toString() !== requesterId) {
-    return NextResponse.json({ message: 'Only the ride creator can remove members' }, { status: 403 });
+    return NextResponse.json({ message: 'Only the creator can remove members' }, { status: 403 });
   }
 
-  if (!ride.members.includes(userIdToRemove)) {
-    return NextResponse.json({ message: 'User is not a member of this ride' }, { status: 400 });
-  }
-
-  // Remove user from ride.members
+  // Remove user from ride
   await Ride.findByIdAndUpdate(rideId, {
     $pull: { members: userIdToRemove }
   });
 
-  // Remove ride from user.joinedRides
-  await User.findByIdAndUpdate(userIdToRemove, {
-    $pull: { joinedRides: rideId }
-  });
-
-  return NextResponse.json({ message: 'Member removed from ride' }, { status: 200 });
+  return NextResponse.json({ message: 'Member removed successfully' }, { status: 200 });
 }
 
 export const POST = authMiddleware(handler);
