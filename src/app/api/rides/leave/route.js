@@ -4,7 +4,7 @@ import User from '@/models/User';
 import { authMiddleware } from '@/middleware/auth';
 import { NextResponse } from 'next/server';
 
-async function handler(req) {
+async function handler(req, user) {
   if (req.method !== 'POST') {
     return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
   }
@@ -12,7 +12,7 @@ async function handler(req) {
   await connectDB();
 
   const { rideId } = await req.json();
-  const userId = req.user.id;
+  const userId = user.id;
 
   const ride = await Ride.findById(rideId);
 
@@ -20,7 +20,6 @@ async function handler(req) {
     return NextResponse.json({ message: 'Ride not found' }, { status: 404 });
   }
 
-  // Don't allow creator to leave their own ride
   if (ride.creator.toString() === userId) {
     return NextResponse.json({ message: 'Creator cannot leave their own ride' }, { status: 400 });
   }
@@ -29,12 +28,10 @@ async function handler(req) {
     return NextResponse.json({ message: 'You are not a member of this ride' }, { status: 400 });
   }
 
-  // 1. Remove user from ride.members
   await Ride.findByIdAndUpdate(rideId, {
     $pull: { members: userId }
   });
 
-  // 2. Remove ride from user.joinedRides
   await User.findByIdAndUpdate(userId, {
     $pull: { joinedRides: rideId }
   });

@@ -73,11 +73,11 @@ export default function MyCreatedRidesPage() {
               <p className="text-sm text-gray-600">₹{ride.cost} | {ride.status} | {ride.tag}</p>
               <p className="mt-1 text-gray-700">{ride.description}</p>
 
-              {Array.isArray(ride.joiners) && ride.joiners.length > 0 && (
+              {Array.isArray(ride.members) && ride.members.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-sm font-semibold">Joiners:</p>
+                  <p className="text-sm font-semibold">members:</p>
                   <ul className="list-disc ml-5">
-                    {ride.joiners.map((j) => (
+                    {ride.members.map((j) => (
                       <li key={j._id} className="text-sm flex justify-between">
                         <span>{j.name} ({j.email})</span>
                         <Button

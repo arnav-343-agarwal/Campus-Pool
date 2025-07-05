@@ -1,22 +1,26 @@
 import { connectDB } from '@/lib/db';
 import Ride from '@/models/Ride';
-import User from '@/models/User'; // Required for .populate
 import { authMiddleware } from '@/middleware/auth';
 import { NextResponse } from 'next/server';
 
-async function handler(req) {
-  if (req.method !== 'GET') {
-    return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
+async function handler(req, user) {
+  try {
+    await connectDB();
+
+    const userId = user.id; // ✅ THIS LINE FIXED
+    if (!userId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rides = await Ride.find({ members: userId })
+      .populate('creator', 'name email')
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json({ rides }, { status: 200 });
+  } catch (err) {
+    console.error('Error in my-joined API:', err);
+    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
   }
-
-  await connectDB();
-  const userId = req.user.id;
-
-  const rides = await Ride.find({ members: userId })
-    .populate('creator', 'name email') // so you can show who created it
-    .sort({ createdAt: -1 });
-
-  return NextResponse.json({ rides });
 }
 
 export const GET = authMiddleware(handler);

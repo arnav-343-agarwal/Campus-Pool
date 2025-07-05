@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export function authMiddleware(handler) {
   return async (req, ...args) => {
-    const token = req.headers.get('authorization')?.split(' ')[1]; // Bearer <token>
+    const token = req.headers.get('authorization')?.split(' ')[1];
 
     if (!token) {
       return NextResponse.json({ message: 'Unauthorized: No token provided' }, { status: 401 });
@@ -13,8 +13,9 @@ export function authMiddleware(handler) {
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded; // decoded = { id, email, ... }
-      return handler(req, ...args);
+
+      // Pass user as second param
+      return handler(req, decoded, ...args);
     } catch (err) {
       return NextResponse.json({ message: 'Unauthorized: Invalid token' }, { status: 401 });
     }
