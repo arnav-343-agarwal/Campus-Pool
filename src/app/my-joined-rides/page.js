@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function MyJoinedRidesPage() {
   const [rides, setRides] = useState([]);
@@ -33,33 +34,65 @@ export default function MyJoinedRidesPage() {
     fetchMyJoined();
   }, [router]);
 
+  const getStatusBadge = (status) => {
+    const colorMap = {
+      Available: 'bg-green-100 text-green-700 border-green-300',
+      'Filling Fast': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      Full: 'bg-red-100 text-red-700 border-red-300',
+    };
+    return (
+      <Badge className={`border ${colorMap[status] || 'bg-gray-100 text-gray-700 border-gray-300'}`}>
+        {status}
+      </Badge>
+    );
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-4">My Joined Rides</h1>
+    <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
+      <h1 className="text-3xl font-bold">My Joined Rides</h1>
 
       {error && <p className="text-red-600">{error}</p>}
 
       {rides.length === 0 ? (
-        <p className="text-gray-600">No joined rides yet.</p>
+        <p className="text-gray-600">You haven't joined any rides yet.</p>
       ) : (
         <div className="space-y-4">
           {rides.map((ride) => (
-            <div key={ride._id} className="border rounded-md p-4 shadow-sm">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">
+            <div
+              key={ride._id}
+              className="p-5 bg-white border rounded-xl shadow-sm hover:shadow-md transition"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-xl font-semibold">
                   {ride.source.name} → {ride.destination.name}
                 </h2>
+                {/* {getStatusBadge(ride.status)} */}
               </div>
+
               <p className="text-sm text-gray-600">
-                ₹{ride.cost} | {ride.status} | {ride.tag}
+                <strong>Tags:</strong> {ride.tags?.join(', ') || 'None'} &nbsp; | &nbsp;
+                <strong>Cost:</strong> ₹{ride.cost}
               </p>
-              <p className="mt-1 text-gray-700">{ride.description}</p>
-              <Link
-                href={`/rides/${ride._id}`}
-                className="text-blue-600 text-sm mt-2 inline-block"
-              >
-                View Details →
-              </Link>
+
+              <p className="text-sm text-gray-600 mt-1">
+                <strong>Ride Time:</strong>{' '}
+                <span className="text-blue-700 font-medium">
+                  {new Date(ride.rideDate).toLocaleString('en-IN', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  })}
+                </span>
+              </p>
+
+              <p className="mt-2 text-gray-700">{ride.description}</p>
+
+              <div className="mt-4">
+                <Link href={`/rides/${ride._id}`}>
+                  <Button size="sm" variant="outline">
+                    View Details →
+                  </Button>
+                </Link>
+              </div>
             </div>
           ))}
         </div>
