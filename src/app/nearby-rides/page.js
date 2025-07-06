@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button'; // if you're using shadcn/ui or your own button
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function NearbyRidesPage() {
   const [rides, setRides] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [distanceKm, setDistanceKm] = useState(50); // default: 50 km
+  const [distanceKm, setDistanceKm] = useState(50);
   const [coords, setCoords] = useState(null);
 
   const fetchRides = async (lat, lng, km) => {
@@ -16,6 +19,7 @@ export default function NearbyRidesPage() {
       setError('Please enter a valid distance greater than 0.');
       return;
     }
+
     const meters = km * 1000;
 
     try {
@@ -56,53 +60,89 @@ export default function NearbyRidesPage() {
     if (coords) fetchRides(coords.latitude, coords.longitude, distanceKm);
   };
 
-  return (
-    <div className="max-w-4xl mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-4">Nearby Rides</h1>
+  const getStatusBadge = (status) => {
+    const colorMap = {
+      Available: 'bg-green-100 text-green-700 border-green-300',
+      'Filling Fast': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      Full: 'bg-red-100 text-red-700 border-red-300',
+    };
+    return (
+      <Badge className={`border ${colorMap[status] || 'bg-gray-100 text-gray-700 border-gray-300'}`}>
+        {status}
+      </Badge>
+    );
+  };
 
-      <div className="mb-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">
+  return (
+    <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
+      <h1 className="text-3xl font-bold">Nearby Rides</h1>
+
+      <div className="bg-gray-50 p-4 rounded-md border w-full max-w-md">
+        <Label htmlFor="distance" className="text-sm font-medium">
           Search Radius (in kilometers)
-        </label>
-        <div className="flex items-center gap-2">
-          <input
+        </Label>
+        <div className="flex items-center gap-3 mt-2">
+          <Input
+            id="distance"
             type="number"
             min="1"
             value={distanceKm}
             onChange={(e) => setDistanceKm(parseInt(e.target.value) || '')}
-            className="border p-2 rounded-md w-40"
             placeholder="Enter distance"
+            className="w-36"
           />
           <Button onClick={handleSearch}>Search</Button>
         </div>
       </div>
 
-      {loading && <p className="text-gray-500">Loading rides...</p>}
+      {loading && <p className="text-gray-500">🔄 Loading nearby rides...</p>}
       {error && <p className="text-red-600">{error}</p>}
 
       {!loading && !error && rides.length === 0 && (
-        <p className="text-gray-500">No nearby rides found.</p>
+        <p className="text-gray-500">No nearby rides found within {distanceKm} km.</p>
       )}
 
       <div className="space-y-4">
         {rides.map((ride) => (
-          <div key={ride._id} className="p-4 border rounded-md shadow-sm">
-            <h2 className="text-lg font-semibold">
-              {ride.source.name} → {ride.destination.name}
-            </h2>
+          <div
+            key={ride._id}
+            className="p-5 bg-white border rounded-xl shadow-sm hover:shadow-md transition"
+          >
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-xl font-semibold">
+                {ride.source.name} → {ride.destination.name}
+              </h2>
+              {getStatusBadge(ride.status)}
+            </div>
+
             <p className="text-sm text-gray-600">
-              {ride.tags.join(', ')} | ₹{ride.cost} | Status: {ride.status}
+              <strong>Tags:</strong> {ride.tags?.join(', ') || 'None'} &nbsp; | &nbsp;
+              <strong>Cost:</strong> ₹{ride.cost}
             </p>
-            <p className="mt-1 text-gray-700">{ride.description}</p>
+
+            <p className="text-sm text-gray-600 mt-1">
+              <strong>Ride Time:</strong>{' '}
+              <span className="text-blue-700 font-medium">
+                {new Date(ride.rideDate).toLocaleString('en-IN', {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}
+              </span>
+            </p>
+
+            <p className="mt-2 text-gray-700">{ride.description}</p>
+
             <p className="text-sm text-gray-500 mt-1">
               Posted by: {ride.creator?.name} ({ride.creator?.email})
             </p>
-            <Link
-              href={`/rides/${ride._id}`}
-              className="text-blue-600 text-sm mt-2 inline-block"
-            >
-              View Details →
-            </Link>
+
+            <div className="mt-4">
+              <Link href={`/rides/${ride._id}`}>
+                <Button size="sm" variant="outline">
+                  View Details →
+                </Button>
+              </Link>
+            </div>
           </div>
         ))}
       </div>
