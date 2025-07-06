@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import MapboxRoute from "@/components/MapboxRoute";
 
 export default function RideDetailPage() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function RideDetailPage() {
   const [userId, setUserId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showMap, setShowMap] = useState(false);
 
   // Move fetchRide outside to reuse it
   const fetchRide = async () => {
@@ -139,13 +141,31 @@ export default function RideDetailPage() {
     <div className="max-w-3xl mx-auto py-10 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            {ride.source.name} → {ride.destination.name}
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl font-bold">
+              {ride.source.name} → {ride.destination.name}
+            </CardTitle>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-700">Show Map</span>
+              <button
+                type="button"
+                onClick={() => setShowMap(!showMap)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  showMap ? "bg-blue-600" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    showMap ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Basic Info Section */}
+          {/* Basic Info Section (no change) */}
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="font-semibold">Price:</span>
@@ -254,6 +274,26 @@ export default function RideDetailPage() {
           {error && <p className="text-red-600 text-sm">{error}</p>}
         </CardContent>
       </Card>
+
+      {/* Map Below the Card */}
+      <div
+        className={`transition-all duration-500 ease-in-out overflow-hidden ${
+          showMap ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        {ride.source?.coordinates && ride.destination?.coordinates && (
+          <MapboxRoute
+            source={{
+              lat: ride.source.coordinates[1],
+              lng: ride.source.coordinates[0],
+            }}
+            destination={{
+              lat: ride.destination.coordinates[1],
+              lng: ride.destination.coordinates[0],
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
