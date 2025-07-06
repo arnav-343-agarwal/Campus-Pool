@@ -24,8 +24,14 @@ const rideSchema = new mongoose.Schema({
     }
   },
 
+  rideDate: {
+    type: Date,
+    required: true
+  },
+
   tags: {
     type: [String],
+    enum: ['Vacation', 'Work', 'Exams', 'Airport'],
     default: []
   },
 
@@ -68,7 +74,6 @@ const rideSchema = new mongoose.Schema({
   }
 });
 
-// Add 2dsphere index for geo queries
 rideSchema.index({ 'source.coordinates': '2dsphere' });
 rideSchema.index({ 'destination.coordinates': '2dsphere' });
 

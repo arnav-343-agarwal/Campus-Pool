@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema({
     trim: true
   },
 
+  phone: {
+    type: String,
+    required: true,
+    trim: true
+  },
+
   passwordHash: {
     type: String,
     required: true
@@ -38,5 +44,4 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Prevent model overwrite in dev (important for Next.js hot reloading)
 export default mongoose.models.User || mongoose.model('User', userSchema);

@@ -12,7 +12,7 @@ export default function AvailableRidesPage() {
       try {
         const res = await fetch('/api/rides/available');
         const data = await res.json();
-        console.log(data)
+        // console.log(data)
         if (!res.ok) throw new Error(data.message || 'Failed to load rides');
         setRides(data.rides || []);
       } catch (err) {
