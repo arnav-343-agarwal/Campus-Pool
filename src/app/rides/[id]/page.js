@@ -14,21 +14,21 @@ export default function RideDetailPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchRide = async () => {
-      try {
-        const res = await fetch(`/api/rides/${id}`);
-        const data = await res.json();
-        console.log(data);
-        if (!res.ok) throw new Error(data.message || "Failed to load ride");
-        setRide(data.ride);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Move fetchRide outside to reuse it
+  const fetchRide = async () => {
+    try {
+      const res = await fetch(`/api/rides/${id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to load ride");
+      setRide(data.ride);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
@@ -61,7 +61,8 @@ export default function RideDetailPage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join ride");
-      router.refresh();
+
+      await fetchRide(); // ✅ re-fetch ride data
     } catch (err) {
       setError(err.message);
     }
@@ -83,7 +84,8 @@ export default function RideDetailPage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to leave ride");
-      router.refresh();
+
+      await fetchRide(); // ✅ re-fetch ride data
     } catch (err) {
       setError(err.message);
     }
@@ -100,10 +102,8 @@ export default function RideDetailPage() {
         },
         body: JSON.stringify({ rideId: id, userIdToRemove }),
       });
-      setRide((prev) => ({
-        ...prev,
-        members: prev.members.filter((m) => m._id !== userIdToRemove),
-      }));
+
+      await fetchRide(); // ✅ re-fetch after removal
     } catch (err) {
       alert("Failed to remove member");
     }
@@ -151,19 +151,16 @@ export default function RideDetailPage() {
               <span className="font-semibold">Price:</span>
               <span>₹{ride.cost}</span>
             </div>
-
             <div className="flex justify-between">
               <span className="font-semibold">Status:</span>
               <span>{ride.status}</span>
             </div>
-
             <div className="flex justify-between">
               <span className="font-semibold">Seats:</span>
               <span>
                 {ride.members?.length || 0} / {ride.maxMembers} filled
               </span>
             </div>
-
             <div className="flex justify-between">
               <span className="font-semibold">Ride Date & Time:</span>
               <span className="text-blue-700 font-medium">
@@ -237,7 +234,6 @@ export default function RideDetailPage() {
                   >
                     <span>
                       {user.name} ({user.email})
-                      {/* Optionally add phone: 📞 {user.phone} */}
                     </span>
                     {isCreator && user._id !== userId && (
                       <Button
