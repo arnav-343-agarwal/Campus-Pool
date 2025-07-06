@@ -146,25 +146,38 @@ export default function RideDetailPage() {
 
         <CardContent className="space-y-4">
           {/* Basic Info Section */}
-          <div className="space-y-2">
+          <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="font-semibold">Price:</span>
               <span>₹{ride.cost}</span>
             </div>
+
             <div className="flex justify-between">
               <span className="font-semibold">Status:</span>
               <span>{ride.status}</span>
             </div>
+
             <div className="flex justify-between">
               <span className="font-semibold">Seats:</span>
               <span>
                 {ride.members?.length || 0} / {ride.maxMembers} filled
               </span>
             </div>
+
+            <div className="flex justify-between">
+              <span className="font-semibold">Ride Date & Time:</span>
+              <span className="text-blue-700 font-medium">
+                {new Date(ride.rideDate).toLocaleString("en-IN", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </span>
+            </div>
+
             {ride.tags?.length > 0 && (
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start">
                 <span className="font-semibold">Tags:</span>
-                <span className="flex gap-2 flex-wrap">
+                <span className="flex gap-2 flex-wrap justify-end max-w-[70%]">
                   {ride.tags.map((tag, i) => (
                     <Badge key={i} variant="outline">
                       {tag}
@@ -176,7 +189,7 @@ export default function RideDetailPage() {
           </div>
 
           {/* Description & Note */}
-          <p className="text-gray-700">{ride.description}</p>
+          <p className="text-gray-700 text-sm">{ride.description}</p>
 
           {ride.noteForJoiners && (
             <div className="bg-blue-50 p-3 rounded-md text-sm border">
@@ -224,6 +237,7 @@ export default function RideDetailPage() {
                   >
                     <span>
                       {user.name} ({user.email})
+                      {/* Optionally add phone: 📞 {user.phone} */}
                     </span>
                     {isCreator && user._id !== userId && (
                       <Button
