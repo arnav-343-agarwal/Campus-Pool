@@ -1,22 +1,25 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 export default function NearbyRidesPage() {
   const [rides, setRides] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [inputDistanceKm, setInputDistanceKm] = useState(50);
   const [distanceKm, setDistanceKm] = useState(50);
+
   const [coords, setCoords] = useState(null);
 
   const fetchRides = async (lat, lng, km) => {
     if (km <= 0 || isNaN(km)) {
-      setError('Please enter a valid distance greater than 0.');
+      setError("Please enter a valid distance greater than 0.");
       return;
     }
 
@@ -24,11 +27,14 @@ export default function NearbyRidesPage() {
 
     try {
       setLoading(true);
-      const res = await fetch(`/api/rides/nearby?lat=${lat}&lng=${lng}&distance=${meters}`);
+      const res = await fetch(
+        `/api/rides/nearby?lat=${lat}&lng=${lng}&distance=${meters}`
+      );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to fetch nearby rides');
+      if (!res.ok)
+        throw new Error(data.message || "Failed to fetch nearby rides");
       setRides(data.rides || []);
-      setError('');
+      setError("");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -38,7 +44,7 @@ export default function NearbyRidesPage() {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError('Geolocation not supported');
+      setError("Geolocation not supported");
       setLoading(false);
       return;
     }
@@ -50,24 +56,31 @@ export default function NearbyRidesPage() {
         fetchRides(latitude, longitude, distanceKm);
       },
       () => {
-        setError('Permission denied or location error');
+        setError("Permission denied or location error");
         setLoading(false);
       }
     );
   }, []);
 
   const handleSearch = () => {
-    if (coords) fetchRides(coords.latitude, coords.longitude, distanceKm);
+    if (coords && inputDistanceKm > 0) {
+      setDistanceKm(inputDistanceKm); // ✅ Show correct value in UI
+      fetchRides(coords.latitude, coords.longitude, inputDistanceKm);
+    }
   };
 
   const getStatusBadge = (status) => {
     const colorMap = {
-      Available: 'bg-green-100 text-green-700 border-green-300',
-      'Filling Fast': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      Full: 'bg-red-100 text-red-700 border-red-300',
+      Available: "bg-green-100 text-green-700 border-green-300",
+      "Filling Fast": "bg-yellow-100 text-yellow-800 border-yellow-300",
+      Full: "bg-red-100 text-red-700 border-red-300",
     };
     return (
-      <Badge className={`border ${colorMap[status] || 'bg-gray-100 text-gray-700 border-gray-300'}`}>
+      <Badge
+        className={`border ${
+          colorMap[status] || "bg-gray-100 text-gray-700 border-gray-300"
+        }`}
+      >
         {status}
       </Badge>
     );
@@ -86,20 +99,35 @@ export default function NearbyRidesPage() {
             id="distance"
             type="number"
             min="1"
-            value={distanceKm}
-            onChange={(e) => setDistanceKm(parseInt(e.target.value) || '')}
+            value={inputDistanceKm}
+            onChange={(e) => setInputDistanceKm(parseInt(e.target.value) || "")}
             placeholder="Enter distance"
             className="w-36"
           />
+
           <Button onClick={handleSearch}>Search</Button>
         </div>
       </div>
 
-      {loading && <p className="text-gray-500">🔄 Loading nearby rides...</p>}
+      {loading && (
+        <div className="flex items-center gap-2 text-gray-500">
+          <Loader2 className="animate-spin w-4 h-4" />
+          Fetching nearby rides...
+        </div>
+      )}
+
       {error && <p className="text-red-600">{error}</p>}
 
       {!loading && !error && rides.length === 0 && (
-        <p className="text-gray-500">No nearby rides found within {distanceKm} km.</p>
+        <div className="text-center text-gray-600 bg-gray-50 p-6 rounded-md border">
+          <p className="text-lg font-semibold">
+            No nearby rides found within{" "}
+            <span className="font-bold">{distanceKm} km</span>.
+          </p>
+          <p className="mt-2 text-sm">
+            Try increasing your search distance or check again later.
+          </p>
+        </div>
       )}
 
       <div className="space-y-4">
@@ -116,16 +144,17 @@ export default function NearbyRidesPage() {
             </div>
 
             <p className="text-sm text-gray-600">
-              <strong>Tags:</strong> {ride.tags?.join(', ') || 'None'} &nbsp; | &nbsp;
+              <strong>Tags:</strong> {ride.tags?.join(", ") || "None"} &nbsp; |
+              &nbsp;
               <strong>Cost:</strong> ₹{ride.cost}
             </p>
 
             <p className="text-sm text-gray-600 mt-1">
-              <strong>Ride Time:</strong>{' '}
+              <strong>Ride Time:</strong>{" "}
               <span className="text-blue-700 font-medium">
-                {new Date(ride.rideDate).toLocaleString('en-IN', {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
+                {new Date(ride.rideDate).toLocaleString("en-IN", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
                 })}
               </span>
             </p>
