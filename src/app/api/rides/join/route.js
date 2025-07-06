@@ -31,12 +31,24 @@ async function handler(req, user) {
     return NextResponse.json({ message: 'Ride is already full' }, { status: 400 });
   }
 
-  await Ride.findByIdAndUpdate(rideId, {
-    $push: { members: userId }
-  });
+  // 1. Add member to the ride
+  ride.members.push(userId);
 
+  // 2. Recalculate status
+  const currentCount = ride.members.length;
+  if (currentCount === ride.maxMembers) {
+    ride.status = 'Full';
+  } else if (currentCount === ride.maxMembers - 1) {
+    ride.status = 'Filling Fast';
+  } else {
+    ride.status = 'Available';
+  }
+
+  await ride.save();
+
+  // 3. Add ride to user's joinedRides
   await User.findByIdAndUpdate(userId, {
-    $push: { joinedRides: rideId }
+    $addToSet: { joinedRides: rideId }
   });
 
   return NextResponse.json({ message: 'Successfully joined the ride' }, { status: 200 });
