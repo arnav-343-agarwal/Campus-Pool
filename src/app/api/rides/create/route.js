@@ -5,7 +5,7 @@ import { authMiddleware } from '@/middleware/auth';
 import { NextResponse } from 'next/server';
 import { getCoordinates } from '@/lib/geocode';
 
-async function handler(req) {
+async function handler(req, decodedUser) {
   if (req.method !== 'POST') {
     return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
   }
@@ -16,15 +16,20 @@ async function handler(req) {
     sourceText,
     destinationText,
     tags,
+    rideDate, // ✅ NEW
     description,
     noteForJoiners,
     cost,
-    maxMembers
+    maxMembers,
   } = body;
 
-  const creatorId = req.user.id;
+  const creatorId = decodedUser.id;
 
   try {
+    if (!rideDate || isNaN(new Date(rideDate))) {
+      return NextResponse.json({ message: 'Invalid or missing ride date' }, { status: 400 });
+    }
+
     const source = await getCoordinates(sourceText);
     const destination = await getCoordinates(destinationText);
 
@@ -32,7 +37,8 @@ async function handler(req) {
       creator: creatorId,
       source,
       destination,
-      tags,
+      tags: [tags], // wrapped in array since schema expects array
+      rideDate: new Date(rideDate),
       description,
       noteForJoiners,
       cost,

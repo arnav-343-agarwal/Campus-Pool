@@ -186,7 +186,8 @@ export default function RideDetailPage() {
 
           <p className="text-sm text-gray-500">
             Posted by: <strong>{ride.creator.name}</strong> (
-            {ride.creator.email})
+            {ride.creator.email})<br />
+            📞 <strong>{ride.creator.phone}</strong>
           </p>
 
           {/* Action Buttons */}

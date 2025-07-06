@@ -13,7 +13,8 @@ export default function CreateRidePage() {
   const [form, setForm] = useState({
     sourceText: "",
     destinationText: "",
-    tags: "",
+    tags: "",              // Will hold one value from dropdown
+    rideDate: "",          // New field for date + time
     description: "",
     noteForJoiners: "",
     cost: "",
@@ -23,9 +24,7 @@ export default function CreateRidePage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-    }
+    if (!token) router.push("/login");
   }, []);
 
   const handleChange = (e) => {
@@ -80,8 +79,29 @@ export default function CreateRidePage() {
               onChange={handleChange}
             />
 
-            <Label>Tag(s) — comma separated</Label>
-            <Input name="tags" value={form.tags} onChange={handleChange} />
+            <Label>Ride Date & Time</Label>
+            <Input
+              name="rideDate"
+              type="datetime-local"
+              required
+              value={form.rideDate}
+              onChange={handleChange}
+            />
+
+            <Label>Purpose / Tag</Label>
+            <select
+              name="tags"
+              value={form.tags}
+              onChange={handleChange}
+              className="w-full border rounded-md p-2 text-sm"
+              required
+            >
+              <option value="">Select a tag</option>
+              <option value="Vacation">Vacation</option>
+              <option value="Work">Work</option>
+              <option value="Exams">Exams</option>
+              <option value="Airport">Airport</option>
+            </select>
 
             <Label>Description</Label>
             <Textarea

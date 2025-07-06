@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+  });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -20,21 +25,21 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
+      if (!res.ok) throw new Error(data.message || "Registration failed");
 
-      localStorage.setItem('token', data.token);
-      router.push('/my-created-rides'); // redirect after registration
+      localStorage.setItem("token", data.token);
+      router.push("/my-created-rides"); // redirect after registration
     } catch (err) {
       setError(err.message);
     } finally {
@@ -46,7 +51,9 @@ export default function RegisterPage() {
     <div className="flex justify-center items-center min-h-[80vh]">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Register for PoolMate</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            Register for PoolMate
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,6 +80,19 @@ export default function RegisterPage() {
                 onChange={handleChange}
               />
             </div>
+            <div>
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="text"
+                pattern="\d{10}"
+                title="Enter 10 digit phone number"
+                required
+                value={form.phone}
+                onChange={handleChange}
+              />
+            </div>
 
             <div>
               <Label htmlFor="password">Password</Label>
@@ -89,7 +109,7 @@ export default function RegisterPage() {
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? "Registering..." : "Register"}
             </Button>
           </form>
         </CardContent>
