@@ -1,7 +1,10 @@
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req) {
   await connectDB();
@@ -31,8 +34,13 @@ export async function POST(req) {
     passwordHash,
   });
 
+  // ✅ Generate JWT token
+  const token = jwt.sign({ id: newUser._id }, JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
   return NextResponse.json(
-    { message: "User registered", userId: newUser._id },
+    { message: "User registered", token },
     { status: 201 }
   );
 }
