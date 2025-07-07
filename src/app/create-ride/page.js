@@ -178,7 +178,7 @@ export default function CreateRidePage() {
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <Button type="submit" className="w-full text-white font-semibold text-base">
-              🚀 Create Ride
+            Create Ride
             </Button>
           </form>
         </CardContent>
