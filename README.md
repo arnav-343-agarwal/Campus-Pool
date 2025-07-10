@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PoolMate
 
-## Getting Started
+**PoolMate** is a full-stack ride-sharing web application that enables users to **create**, **join**, and **manage rides** easily. Whether you're commuting to the office, catching a flight, or planning a weekend getaway — PoolMate helps you connect with people going your way and **form ride pools** that are:
 
-First, run the development server:
+- 💸 **Cost-efficient**
+- 🌱 **Environmentally friendly**
+- 👥 **Community-driven**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🌟 Features
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- 🔍 Find nearby rides using source & destination
+- 🗺️ Toggleable Map with Source & Destination markers (powered by Mapbox)
+- 🧾 Create rides with cost, time, max members & notes
+- 🙋 Join & leave rides with real-time member tracking
+- 🧑‍💼 Role-based actions (creator can edit/delete/manage)
+- 🛡️ JWT-based authentication
+- 💅 Beautiful responsive UI using TailwindCSS + shadcn/ui
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧠 Why PoolMate?
 
-To learn more about Next.js, take a look at the following resources:
+> More than just a pooling app…
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 💸 **Money Efficient**: Share rides & costs to save big
+- 🌍 **Eco-Friendly**: Reduce carbon footprint through carpooling
+- 🕒 **Time Saving**: Easily coordinate with people on the same route
+- 🧑‍🤝‍🧑 **People-Driven**: Travel together, safer and smarter
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ⚙️ Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Layer       | Technology                      |
+|-------------|----------------------------------|
+| Frontend    | **Next.js 14**, TailwindCSS, shadcn/ui |
+| Backend     | **Next.js API Routes**          |
+| Database    | **MongoDB** with Mongoose       |
+| Auth        | **JWT** Authentication          |
+| Maps        | **Mapbox GL JS** Integration    |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
