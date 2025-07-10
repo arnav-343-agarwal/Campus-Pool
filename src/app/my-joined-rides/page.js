@@ -116,7 +116,7 @@ export default function MyJoinedRidesPage() {
       {error && <p className="text-red-600">{error}</p>}
 
       {rides.length === 0 ? (
-        <p className="text-gray-600">You haven't joined any rides yet.</p>
+        <p className="text-gray-600">You have not joined any rides yet.</p>
       ) : (
         <div className="space-y-4">
           {rides.map((ride) => (
